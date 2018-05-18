@@ -1,0 +1,42 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    //buildToolsVersion "26.0.1"
+    defaultConfig {
+        applicationId "com.demo.jnidemo"
+        minSdkVersion 19
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets.main {
+        jni.srcDirs = []
+        jniLibs.srcDirs = ['src/main/jniLibs']//设置目标的so存放路径
+    }
+
+    task ndkBuild(type:Exec,description:'Compile JNI source via NDK'){
+        commandLine "C:\\Users\\lei\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\ndk-build.cmd",//配置ndk的路径
+                'NDK_PROJECT_PATH=build/intermediates/ndk',//ndk默认的生成so的文件
+                'NDK_LIBS_OUT=src/main/jniLibs',//配置的我们想要生成的so文件所在的位置
+                'APP_BUILD_SCRIPT=src/main/jni/Android.mk',//指定项目以这个mk的方式
+                'NDK_APPLOCATION_MK=src/main/jni/Application.mk'//指定项目以这个mk的方式
+    }
+    tasks.withType(JavaCompile){
+            //使用ndkBuild
+        compileTask ->compileTask.dependsOn ndkBuild
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'junit:junit:4.12'
+}
